@@ -3,20 +3,20 @@
 # Navigate to the current directory
 cd "$(dirname "$0")" || { echo "Failed to navigate to script directory. Exiting..."; exit 1; }
 
-# Download items_index.txt
+# Download Items_Index.txt
 echo "[*] Downloading Items_Index.txt..."
-curl -L https://raw.githubusercontent.com/darksideyt762/sidedark/main/items_index.txt -o items_index.txt || { echo "Failed to download items_index.txt. Exiting..."; exit 1; }
+curl -L https://raw.githubusercontent.com/darksideyt762/sidedark/main/Items_Index.txt -o Items_Index.txt || { echo "Failed to download Items_Index.txt. Exiting..."; exit 1; }
 
 # Convert script to Unix format
 echo "[*] Converting script to Unix format..."
-dos2unix skin || { echo "Failed to convert script. Exiting..."; exit 1; }
+dos2unix dark || { echo "Failed to convert script. Exiting..."; exit 1; }
 
 # Make the script executable
 echo "[*] Making script executable..."
-chmod +x skin || { echo "Failed to make script executable. Exiting..."; exit 1; }
+chmod +x dark || { echo "Failed to make script executable. Exiting..."; exit 1; }
 
 # Create symbolic link
 echo "[*] Creating symbolic link..."
-ln -sf "$(pwd)/skin" /data/data/com.termux/files/usr/bin/skin || { echo "Failed to create symbolic link. Exiting..."; exit 1; }
+ln -sf "$(pwd)/dark" /data/data/com.termux/files/usr/bin/dark || { echo "Failed to create symbolic link. Exiting..."; exit 1; }
 
-echo "[✔] Setup complete! You can now execute the tool by typing 'skin'."
+echo "[✔] Setup complete! You can now execute the tool by typing 'dark'."
