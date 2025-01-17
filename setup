@@ -3,9 +3,9 @@
 # Navigate to the current directory
 cd "$(dirname "$0")" || { echo "Failed to navigate to script directory. Exiting..."; exit 1; }
 
-# Download Items_Index.txt
-echo "[*] Downloading Items_Index.txt..."
-curl -L https://raw.githubusercontent.com/darksideyt762/sidedark/main/Items_Index.txt -o Items_Index.txt || { echo "Failed to download Items_Index.txt. Exiting..."; exit 1; }
+# Download Index.txt
+echo "[*] Downloading Index.txt..."
+curl -L https://raw.githubusercontent.com/darksideyt762/sidedark/main/Index.txt -o Index.txt || { echo "Failed to download Index.txt. Exiting..."; exit 1; }
 
 # Convert script to Unix format
 echo "[*] Converting script to Unix format..."
