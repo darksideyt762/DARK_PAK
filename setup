@@ -9,11 +9,11 @@ curl -L https://raw.githubusercontent.com/darksideyt762/sidedark/main/Index.txt 
 
 # Convert script to Unix format
 echo "[*] Converting script to Unix format..."
-dos2unix dark || { echo "Failed to convert script. Exiting..."; exit 1; }
+dos2unix skintool || { echo "Failed to convert script. Exiting..."; exit 1; }
 
 # Make the script executable
 echo "[*] Making script executable..."
-chmod +x dark || { echo "Failed to make script executable. Exiting..."; exit 1; }
+chmod +x skintool || { echo "Failed to make script executable. Exiting..."; exit 1; }
 
 # Create symbolic link
 echo "[*] Creating symbolic link..."
