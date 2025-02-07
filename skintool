@@ -4,7 +4,7 @@ import os
 import json
 import shutil
 import subprocess
-
+import sys
 # File to store the saved path
 CONFIG_FILE = os.path.expanduser("~/.ds_skin_config.json")
 
