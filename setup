@@ -31,8 +31,12 @@ chmod +x skintool || { echo -e "${RED}Failed to make script executable. Exiting.
 echo -e "${BLUE}[*] Making DARKSIDE executable...${NC}"
 chmod +x DARKSIDE || { echo -e "${RED}Failed to make DARKSIDE executable. Exiting...${NC}"; exit 1; }
 
-# Create symbolic link for 'skintool'
-echo -e "${BLUE}[*] Creating symbolic link...${NC}"
-ln -sf "$(pwd)/skintool" /data/data/com.termux/files/usr/bin/dark || { echo -e "${RED}Failed to create symbolic link. Exiting...${NC}"; exit 1; }
+# Create symbolic link for 'skintool' as 'dark'
+echo -e "${BLUE}[*] Creating symbolic link for 'dark'...${NC}"
+ln -sf "$(pwd)/skintool" /data/data/com.termux/files/usr/bin/dark || { echo -e "${RED}Failed to create symbolic link for 'dark'. Exiting...${NC}"; exit 1; }
 
-echo -e "${GREEN}[✔] Setup complete! You can now execute the tool by typing 'dark'.${NC}"
+# Create symbolic link for 'skintool' as 'unpak'
+echo -e "${BLUE}[*] Creating symbolic link for 'unpak'...${NC}"
+ln -sf "$(pwd)/pak" /data/data/com.termux/files/usr/bin/unpak || { echo -e "${RED}Failed to create symbolic link for 'unpak'. Exiting...${NC}"; exit 1; }
+
+echo -e "${GREEN}[✔] Setup complete! You can now execute the tool by typing 'dark' or 'unpak'.${NC}"
