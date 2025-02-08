@@ -1,0 +1,335 @@
+import os
+import json
+import shutil
+import subprocess
+import sys
+import requests
+import getpass  # Hides input
+
+# Function to clear the terminal screen
+def clear_screen():
+    os.system('cls' if os.name == 'nt' else 'clear')
+
+# Function to fetch and validate authentication key
+def fetch_auth_key():
+    """Fetch the authentication key from an online source and validate user input once."""
+    key_url = "https://raw.githubusercontent.com/darksideyt762-hu/key-storage/refs/heads/main/key.txt"  # Replace with actual raw link
+
+    try:
+        response = requests.get(key_url, timeout=5)  # Fetch the key with a timeout
+        if response.status_code == 200:
+            valid_keys = response.text.strip().split("\n")  # Allow multiple valid keys
+        else:
+            print("\n[!] Failed to fetch authentication key. Server error.")
+            sys.exit(1)  # Exit immediately
+    except Exception as e:
+        print(f"\n[!] Error fetching authentication key: {e}")
+        sys.exit(1)  # Exit immediately
+
+    clear_screen()  # Clear screen before asking for the key
+
+    print("\033[32m" + "🔒 Authentication Required" + "\033[0m")  # Simple banner
+
+    user_key = getpass.getpass("\n🔑 Enter your authentication key: ").strip()  # Hide input
+
+    if user_key in valid_keys:
+        print("\n✅ Authentication successful! Access granted.\n")
+        return True
+    else:
+        print("\n❌ Invalid key!! DM @DARKSIDE_YT762 ON TELEGRAM TO GET KEY")
+        sys.exit(1)
+
+# Ensure the user is authenticated before proceeding
+if not fetch_auth_key():
+    print("\nExiting program...")
+    sys.exit(1)
+    
+# Function to clear the terminal screen
+def clear_screen():
+    os.system('cls' if os.name == 'nt' else 'clear')
+
+# File to store the saved path
+CONFIG_FILE = os.path.expanduser("~/.ds_skin_config.json")
+
+# Function to replace the index in the file (in-memory)
+def replace_index_in_file(data, original_index, replacement_index):
+    return data.replace(bytes.fromhex(original_index), bytes.fromhex(replacement_index))
+
+# Function to print text in green color
+def print_green_text(text):
+    print("\033[92m" + text + "\033[0m")
+
+# Function to print text in blue color
+def print_blue_text(text):
+    print("\033[94m" + text + "\033[0m")
+
+# Function to print rainbow-colored text
+def print_rainbow_text(text):
+    colors = ['\033[91m', '\033[93m', '\033[92m', '\033[94m', '\033[95m', '\033[96m']
+    reset = '\033[0m'
+    colored_text = ''.join(colors[i % len(colors)] + char for i, char in enumerate(text))
+    print(colored_text + reset)
+
+def handle_telegram():
+    """Handle redirect to Telegram."""
+    print("Redirecting to Telegram channel...")
+    url = "https://t.me/+Gbtl0WwhFOI0MTll"
+    
+    # Try to open the link in Chrome directly (ensure Chrome is installed and accessible)
+    try:
+        subprocess.run(["am", "start", "-a", "android.intent.action.VIEW", "-d", url], check=True)
+    except Exception as e:
+        print(f"Failed to open URL in Chrome: {e}")
+        
+# Function to get the path for bundled files (PyInstaller compatibility)
+def resource_path(relative_path):
+    """Get the absolute path to a resource, works for PyInstaller and normal script."""
+    try:
+        # PyInstaller creates a temp folder and stores the files there
+        base_path = sys._MEIPASS
+    except AttributeError:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+
+# Ensure Index.txt is present in the same directory as the executable
+def ensure_items_index():
+    target_path = os.path.join(os.getcwd(), "Index.txt")
+    source_path = resource_path("Index.txt")
+    
+    if not os.path.exists(target_path):
+        try:
+            shutil.copy(source_path, target_path)
+            print("[*] Index.txt copied to the current directory.")
+        except Exception as e:
+            print(f"[!] Failed to copy Index.txt: {e}")
+            sys.exit(1)
+
+# Call this at the start of the script
+ensure_items_index()
+
+# Function to load outfits from Index.txt
+def load_outfits(file_path=None):
+    outfits = {}
+    try:
+        # Use the bundled file if no custom path is provided
+        if file_path is None:
+            file_path = os.path.join(os.getcwd(), "Index.txt")
+        
+        with open(file_path, 'r') as file:
+            for line in file:
+                parts = line.strip().split('|')
+                if len(parts) == 3:
+                    outfit_id = parts[0].strip()
+                    outfit_hex = parts[1].strip()
+                    outfit_index = parts[2].split(':')[1].strip()
+                    outfits[outfit_id] = {'hex': outfit_hex, 'index': outfit_index}
+    except Exception as e:
+        print(f"Error loading outfits: {e}")
+    return outfits
+
+# Function to save the current directory path
+def save_directory_path(path):
+    """Save the directory path to a configuration file."""
+    with open(CONFIG_FILE, 'w') as file:
+        json.dump({'directory_path': path}, file)
+
+# Function to load the saved directory path
+def load_directory_path():
+    """Load the saved directory path from the configuration file."""
+    if os.path.exists(CONFIG_FILE):
+        with open(CONFIG_FILE, 'r') as file:
+            data = json.load(file)
+            return data.get('directory_path')
+    return None
+
+# Function to modify a single skin automatically
+def single_skin_maker_auto(directory, destination_dir, hex_code, original_index, replacement_index):
+    for root, dirs, files in os.walk(directory):
+        for file in files:
+            file_path = os.path.join(root, file)
+
+            # Read from the repack folder if the file exists there; otherwise, use unpack
+            if os.path.exists(os.path.join(destination_dir, file)):
+                with open(os.path.join(destination_dir, file), 'rb') as f:
+                    data = f.read()
+            else:
+                with open(file_path, 'rb') as f:
+                    data = f.read()
+
+            if bytes.fromhex(hex_code) in data:
+                # Modify the data
+                modified_data = replace_index_in_file(data, original_index, replacement_index)
+
+                # Save the modified copy to the destination directory
+                file_name = os.path.basename(file_path)
+                dest_path = os.path.join(destination_dir, file_name)
+                with open(dest_path, 'wb') as f:
+                    f.write(modified_data)
+
+                print(f"\nFile modified and saved: {dest_path}")
+                
+                # Stop after modifying the first matching file
+                return
+
+    print("\nNo files found matching the hex code.")
+
+# Function to handle Saved Outfits menu
+def saved_outfits_menu(directory, destination_dir, outfits_file):
+    outfits = load_outfits(outfits_file)
+    if not outfits:
+        print("\nNo outfits data available.")
+        return
+
+    while True:
+        print("\n🧥 Saved Outfits: Search by ID")
+        outfit_id = input("Enter Outfit ID (or 'q' to quit): ").strip()
+        if outfit_id.lower() == 'q':
+            return
+
+        if outfit_id in outfits:
+            selected_outfit = outfits[outfit_id]
+            print(f"\n🎯 Found Outfit: Hex: {selected_outfit['hex']}, Index: {selected_outfit['index']}")
+            replacement_index = input("Enter Replacement Index: ").strip()
+            if not replacement_index:
+                print("\nReplacement Index is required!")
+                continue
+
+            # Automatically apply the selected outfit
+            print("\nApplying the changes...")
+            single_skin_maker_auto(directory, destination_dir, selected_outfit['hex'], selected_outfit['index'], replacement_index)
+            print("\nOutfit applied successfully!")
+        else:
+            print("\nOutfit ID not found. Please try again.")
+
+# Function to handle AutoSkin option
+def auto_skin(directory, destination_dir, outfits_file):
+    outfits = load_outfits(outfits_file)
+    if not outfits:
+        print("\nNo outfits data available.")
+        return
+
+    print("\nEnter ID pairs (OriginalID,ReplacementID) line by line. Enter 'q' to finish:")
+    id_pairs = []
+    while True:
+        pair = input().strip()
+        if pair.lower() == 'q':
+            break
+        try:
+            original_id, replacement_id = pair.split(',')
+            id_pairs.append((original_id.strip(), replacement_id.strip()))
+        except ValueError:
+            print("Invalid format! Please enter as OriginalID,ReplacementID.")
+
+    print("\nProcessing replacements...")
+    for original_id, replacement_id in id_pairs:
+        if original_id in outfits and replacement_id in outfits:
+            original_outfit = outfits[original_id]
+            replacement_outfit = outfits[replacement_id]
+
+            print(f"\n{original_outfit['index']} ⏩ {replacement_outfit['index']}")
+
+            single_skin_maker_auto(
+                directory,
+                destination_dir,
+                original_outfit['hex'],
+                original_outfit['index'],
+                replacement_outfit['index']
+            )
+        else:
+            print(f"\nOne or both IDs not found: {original_id}, {replacement_id}")
+    print("\nAutoSkin processing completed!")
+
+# Change File Path
+def change_file_path():
+    new_directory = input("\nEnter the new file finding directory path: ").strip()
+    if os.path.isdir(new_directory):
+        # Save the directory path
+        save_directory_path(new_directory)
+
+        # Automatically set the destination directory
+        destination_dir = os.path.join(os.path.dirname(new_directory.rstrip('/')), "repack")
+        if not os.path.exists(destination_dir):
+            os.makedirs(destination_dir)
+        print(f"\nDirectory updated successfully!\n")
+        print(f"New destination path automatically set to: {destination_dir}")
+        return new_directory, destination_dir
+    else:
+        print("\nInvalid directory. Please try again.")
+        return change_file_path()
+
+# Function to execute g4pak
+def execute_g4pak():
+    print("\nLETS REPACK")
+    os.system("pak")  # Executes the 'pak' command
+
+def menu(directory):
+    clear_screen()  # Clear the screen before displaying the menu
+
+    # Display banner
+    print("\033[34m" + "╔═════════════════════════════════════════════════════════╗" + "\033[0m")
+    print("\033[34m" + "║" + "██████╗░░██████╗██╗░░░██╗████████╗".center(53) + "║" + "\033[0m")
+    print("\033[34m" + "║" + "██╔══██╗██╔════╝╚██╗░██╔╝╚══██╔══╝".center(53) + "║" + "\033[0m")
+    print("\033[34m" + "║" + "██║░░██║╚█████╗░░╚████╔╝░░░░██║░░░".center(53) + "║" + "\033[0m")
+    print("\033[37m" + "║" + "██║░░██║░╚═══██╗░░╚██╔╝░░░░░██║░░░".center(53) + "║" + "\033[0m")
+    print("\033[37m" + "║" + "██████╔╝██████╔╝░░░██║░░░░░░██║░░░".center(53) + "║" + "\033[0m")
+    print("\033[37m" + "║" + "╚═════╝░╚═════╝░░░░╚═╝░░░░░░╚═╝░░░".center(53) + "║" + "\033[0m")
+    print("\033[37m" + "╚═════════════════════════════════════════════════════════╝" + "\033[0m")
+    print_rainbow_text("════════════════════════════════════════════════════════════")
+    print("\033[32m" + "╔═════════════════════════════════════════════════════════╗" + "\033[0m")
+    print("\033[32m" + "║" + " MADE BY: @DARKSIDE_YT762       ".center(53) + "║" + "\033[0m")
+    print("\033[32m" + "╚═════════════════════════════════════════════════════════╝" + "\033[0m")
+    print("                     ıllıllı 𝘚𝘒𝘐𝘕 𝘔𝘖𝘋𝘋𝘐𝘕𝘎 𝘛𝘖𝘖𝘓 ıllıllı")
+    print_rainbow_text("════════════════════════════════════════════════════════════")
+
+    # Centered options menu
+    print("\033[35m" + "╔═════════════════════════════════════════════════════════╗" + "\033[0m")
+    print("\033[35m" + "║" + " 👇 YOUR OPTIONS MENU LIST 👇".center(53) + "║" + "\033[0m")
+    print("\033[35m" + "╚═════════════════════════════════════════════════════════╝" + "\033[0m")
+    print_blue_text("\n" + "[1] 𝙎𝙄𝙉G𝙇𝙀 𝙎𝙆𝙄𝙉".center(53))
+    print_blue_text("[2] 𝙈𝙐𝙇𝙏𝙄 𝙎𝙆𝙄𝙉".center(53))
+    print_blue_text("[3] 𝘾𝙃𝘼𝙉𝙂𝙀 𝙋𝘼𝙏𝙃".center(53))
+    print_blue_text("[4] 𝙐𝙉𝙋𝘼𝘾𝙆&𝙍𝙀𝙋𝘼𝘾𝙆".center(53))
+    print_blue_text("[5] 𝐉𝐎𝐈𝐍 𝐓𝐄𝐋𝐄𝐆𝐑𝐀𝐌 𝐅𝐎𝐑 𝐌𝐎𝐑𝐄 𝐓𝐎𝐎𝐋𝐒".center(53))
+    print_blue_text("[6] 𝙌𝙐𝙄𝙏".center(53))
+    print_blue_text("\n" + "═══════════════════════════════════════════════════════════".center(53))
+
+    # Get user choice
+    choice = input("\nEnter your choice (number): ").strip()
+    return choice
+
+# Main Function
+def automation_skin_maker():
+    # Load the saved directory path, or use the default one
+    saved_directory = load_directory_path()
+    if saved_directory:
+        directory = saved_directory
+    else:
+        directory = "/storage/emulated/0/DARK_PAK/UNPACK_REPACK/UNPACK/game_patch_3.6.0.19560/unpack/"
+    
+    destination_dir = os.path.join(os.path.dirname(directory.rstrip('/')), "repack")
+    if not os.path.exists(destination_dir):
+        os.makedirs(destination_dir)
+
+    outfits_file = "Index.txt"
+
+    while True:
+        choice = menu(directory)
+        if choice == '1':
+            saved_outfits_menu(directory, destination_dir, outfits_file)
+        elif choice == '2':
+            auto_skin(directory, destination_dir, outfits_file)
+        elif choice == '3':
+            directory, destination_dir = change_file_path()
+        elif choice == '4':
+            execute_g4pak()
+        elif choice == '5':
+            handle_telegram()  # Open Telegram
+        elif choice == '6':
+            print("\nExiting the program. Goodbye!")
+            break
+        else:
+            print("\nInvalid choice. Please select a valid option.")
+
+# Run the tool
+automation_skin_maker()
