@@ -219,7 +219,7 @@ def change_file_path():
 # Function to execute g4pak
 def execute_g4pak():
     print("\nLETS REPACK")
-    os.system("unpak")  # Executes the 'g4pak' command
+    os.system("pak")  # Executes the 'pak' command
 
 def menu(directory):
    # Display banner
