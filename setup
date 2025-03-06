@@ -7,38 +7,43 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# Navigate to the current directory
+# Navigate to the script directory
 echo -e "${BLUE}[*] Navigating to script directory...${NC}"
 cd "$(dirname "$0")" || { echo -e "${RED}Failed to navigate to script directory. Exiting...${NC}"; exit 1; }
 
-# Install required programs
+# Install required packages
 echo -e "${BLUE}[*] Installing required programs...${NC}"
-pkg update -y && pkg install -y curl dos2unix git || { echo -e "${RED}Failed to install required programs. Exiting...${NC}"; exit 1; }
+pkg update -y && pkg upgrade -y && pkg install git python python3 dos2unix curl -y || {
+    echo -e "${RED}Failed to install required programs. Exiting...${NC}"
+    exit 1
+}
 
-# Download Index.txt
-echo -e "${BLUE}[*] Downloading Index.txt...${NC}"
-curl -L https://raw.githubusercontent.com/darksideyt762/sidedark/main/Index.txt -o Index.txt || { echo -e "${RED}Failed to download Index.txt. Exiting...${NC}"; exit 1; }
-
-# Convert script to Unix format
-echo -e "${BLUE}[*] Converting script to Unix format...${NC}"
+# Convert skintool script to Unix format
+echo -e "${BLUE}[*] Converting 'skintool' script to Unix format...${NC}"
 dos2unix skintool || { echo -e "${RED}Failed to convert script. Exiting...${NC}"; exit 1; }
 
-# Make the main script executable
-echo -e "${BLUE}[*] Making main script executable...${NC}"
-chmod +x skintool || { echo -e "${RED}Failed to make script executable. Exiting...${NC}"; exit 1; }
+# Ensure skintool is executable
+echo -e "${BLUE}[*] Making 'skintool' executable...${NC}"
+chmod +x skintool || { echo -e "${RED}Failed to make 'skintool' executable. Exiting...${NC}"; exit 1; }
 
-# Make DARKSIDE executable
-echo -e "${BLUE}[*] Making DARKSIDE executable...${NC}"
-chmod +x DARKSIDE || { echo -e "${RED}Failed to make DARKSIDE executable. Exiting...${NC}"; exit 1; }
+# Ensure DARKSIDE is executable
+echo -e "${BLUE}[*] Making 'DARKSIDE' executable...${NC}"
+chmod +x DARKSIDE || { echo -e "${RED}Failed to make 'DARKSIDE' executable. Exiting...${NC}"; exit 1; }
 
-# Create symbolic link for 'skintool' as 'dark'
-echo -e "${BLUE}[*] Creating symbolic link for 'dark'...${NC}"
-ln -sf "$(pwd)/skintool" /data/data/com.termux/files/usr/bin/dark || { echo -e "${RED}Failed to create symbolic link for 'dark'. Exiting...${NC}"; exit 1; }
+# Move skintool to /usr/bin as 'dark' for easy execution
+echo -e "${BLUE}[*] Setting up shortcut 'dark'...${NC}"
+cp skintool /data/data/com.termux/files/usr/bin/dark || { echo -e "${RED}Failed to move 'skintool'. Exiting...${NC}"; exit 1; }
 
-# Move the pak binary to a directory in $PATH
-cp pak /data/data/com.termux/files/usr/bin/
+# Move pak binary to /usr/bin
+echo -e "${BLUE}[*] Moving 'pak' binary...${NC}"
+cp pak /data/data/com.termux/files/usr/bin/ || { echo -e "${RED}Failed to move 'pak' binary. Exiting...${NC}"; exit 1; }
 
-# Make lootbox executable
-chmod +x /data/data/com.termux/files/usr/bin/pak
+# Ensure both 'dark' and 'pak' are executable
+echo -e "${BLUE}[*] Making 'dark' and 'pak' executable...${NC}"
+chmod +x /data/data/com.termux/files/usr/bin/dark /data/data/com.termux/files/usr/bin/pak || {
+    echo -e "${RED}Failed to make scripts executable. Exiting...${NC}"
+    exit 1
+}
 
+# Display success message
 echo -e "${GREEN}[✔] Setup complete! You can now execute the tool by typing 'dark' or 'pak'.${NC}"
