@@ -13,15 +13,8 @@ cd "$(dirname "$0")" || { echo -e "${RED}Failed to navigate to script directory.
 
 # Install required packages
 echo -e "${BLUE}[*] Installing required programs...${NC}"
-pkg update -y && pkg upgrade -y && pkg install git python python3 dos2unix curl ffmpeg mpv toilet -y || {
+pkg update -y && pkg upgrade -y && pkg install git python python3 dos2unix curl -y || {
     echo -e "${RED}Failed to install required programs. Exiting...${NC}"
-    exit 1
-}
-
-# Install required Python libraries
-echo -e "${BLUE}[*] Installing required Python libraries...${NC}"
-pip install requests playsound || {
-    echo -e "${RED}Failed to install Python libraries. Exiting...${NC}"
     exit 1
 }
 
